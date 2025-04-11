@@ -1,4 +1,4 @@
-# VekAmp
+# VekAmp - basstest-win64
 <p align="center">
   <img alt="vekamp logo" width="45%" src="assets/branding/wordmark.svg" />
 </p>
@@ -11,16 +11,15 @@ The main motivation for this project is to replace my currently used music playe
 >This project is still in it's infancy, If there are any suggestions or feedback you would like to provide, please [submit an issue](https://github.com/vektor451/vekamp/issues/new).
 
 ## Current Plans
-This section covers the current plans for the project's development. At the moment, the main goal for development is to simply get the audio library working and playing music, and then get that functionality working across multiple platforms.
+Currently, the goal for the project's development, and this branch, is to get the audio library to play music files. The progress for this goal is as follows:
+- [x] Link bass.dll and interface with it.
+- [ ] Successfully intialise the audio system.
+- [ ] Play an audio file from the command line.
 
 ## Platforms
-Currently in Development:
-- Windows
-- Linux
+Currently, this branch is only intended for Win64 systems. 
 
-Intended:
-- Android
+## Compiling
+Currently the project compiles with CMake with MSVC, which are required to successfully compile the project. 
 
-Low Priority (I won't work on these myself, but I'm happy for others to do so)
-- MacOS
-- iOS
+Before compilation, it is important to place the necessary library files in their directories. Check the folders in `vendor` for more information. 

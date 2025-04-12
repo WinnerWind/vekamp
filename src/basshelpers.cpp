@@ -41,4 +41,11 @@ namespace BASSHelpers
 
         return verString;
     }
+
+    void BASSError(const char *text)
+    {
+        printf("BASS Error(%d): %s\n", BASS_ErrorGetCode(), text);
+        BASS_Free();
+        exit(0);
+    }
 }

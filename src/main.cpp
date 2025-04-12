@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include <conio.h>
 
 // vekamp
 #include "utils.hpp"
@@ -13,15 +14,35 @@
 
 int main(int argc, char *argv[])
 {
-    std::cout << "Using BASS Version " << BASSHelpers::GetVersionStr() << std::endl;
+    printf("Using BASS Version %s\n", BASSHelpers::GetVersionStr().c_str());
 
-    // check the correct BASS was loaded
+    // Check the correct BASS version was loaded.
 	if (HIWORD(BASS_GetVersion()) != BASSVERSION) {
-		std::cout << "An incorrect version of BASS was loaded";
+		printf("An incorrect version of BASS was loaded\n");
 		return 0;
 	}
 
-    std::cout << HelloWorld();
+	int deviceIdx = -1;
+    DWORD BASSChannel;
 
+    printf("Path: %s\n", argv[1]);
+
+    // Attempts initialisation on default device. 
+    if(!BASS_Init(deviceIdx, 48000, 0, 0, NULL))
+        BASSHelpers::BASSError("Couldn't init device.");
+
+    BASSChannel = BASS_StreamCreateFile(FALSE, argv[1], 0, 0, BASS_SAMPLE_FLOAT);
+
+    if(BASS_ChannelPlay(BASSChannel, FALSE))
+        printf("Playing Audio...");
+    else
+        BASSHelpers::BASSError("Couldn't play file.");
+
+    while(!_kbhit() && BASS_ChannelIsActive(BASSChannel))
+    {
+        
+    }
+
+    BASS_Free();
     return 0;
 }

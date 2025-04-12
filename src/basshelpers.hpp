@@ -5,4 +5,5 @@
 namespace BASSHelpers 
 {
     std::string GetVersionStr();
+    void BASSError(const char *text);
 }

@@ -15,8 +15,3 @@ std::string UlongToHex(unsigned long i)
          << std::hex << i;
   return stream.str();
 }
-
-std::string HelloWorld()
-{
-    return "Hello World";
-}

@@ -13,8 +13,10 @@ The main motivation for this project is to replace my currently used music playe
 ## Current Plans
 Currently, the goal for the project's development, and this branch, is to get the audio library to play music files. The progress for this goal is as follows:
 - [x] Link bass.dll and interface with it.
-- [ ] Successfully intialise the audio system.
-- [ ] Play an audio file from the command line.
+- [x] Successfully intialise the audio system.
+- [x] Play an audio file from the command line.
+
+It works!! 🥳
 
 ## Platforms
 Currently, this branch is only intended for Win64 systems. 

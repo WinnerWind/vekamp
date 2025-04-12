@@ -1,4 +1,4 @@
-# VekAmp - basstest-win64
+# VekAmp - basstest-linux
 <p align="center">
   <img alt="vekamp logo" width="45%" src="assets/branding/wordmark.svg" />
 </p>
@@ -12,16 +12,12 @@ The main motivation for this project is to replace my currently used music playe
 
 ## Current Plans
 Currently, the goal for the project's development, and this branch, is to get the audio library to play music files. The progress for this goal is as follows:
-- [x] Link bass.dll and interface with it.
-- [x] Successfully intialise the audio system.
-- [x] Play an audio file from the command line.
-
-It works!! 🥳
+- [ ] Make it all work on Linux.
 
 ## Platforms
-Currently, this branch is only intended for Win64 systems. 
+This branch intends to make the project cross-platform compatible across Windows and Linux.
 
 ## Compiling
-Currently the project compiles with CMake with MSVC, which are required to successfully compile the project. 
+Currently the project uses CMake with MSVC to compile on Windows, and GCC on Linux instead of MSVC. 
 
 Before compilation, it is important to place the necessary library files in their directories. Check the folders in `vendor` for more information. 

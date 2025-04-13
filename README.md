@@ -1,4 +1,4 @@
-# VekAmp - basstest-linux
+# VekAmp - gtktest-win64
 <p align="center">
   <img alt="vekamp logo" width="45%" src="assets/branding/wordmark.svg" />
 </p>
@@ -12,14 +12,14 @@ The main motivation for this project is to replace my currently used music playe
 
 ## Current Plans
 Currently, the goal for the project's development, and this branch, is to get the audio library to play music files. The progress for this goal is as follows:
-- [x] Make it all work on Linux.
-
-That was surprisingly easy.
+- [ ] Link GTK to the project.
+- [ ] Display a basic hello world screen.
+- [ ] Allow playing a music file through a GUI prompt (filename, and play/stop).
 
 ## Platforms
-This branch intends to make the project cross-platform compatible across Windows and Linux.
+This branch is focused on Windows for the time being. 
 
 ## Compiling
-Currently the project uses CMake with MSVC to compile on Windows, and GCC on Linux instead of MSVC. 
+As of right now, we're still compiling the main program via MSVC, however GTK might require more stuff to get working.  
 
 Before compilation, it is important to place the necessary library files in their directories. Check the folders in `vendor` for more information. 

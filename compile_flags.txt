@@ -1,0 +1,4 @@
+-I
+vendor/bass24
+-I
+C:/gtk/include

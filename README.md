@@ -22,4 +22,6 @@ This branch is focused on Windows for the time being.
 ## Compiling
 As of right now, we're still compiling the main program via MSVC, however GTK might require more stuff to get working.  
 
+In order to link GTK, first build it via [gvsbuild](https://github.com/wingtk/gvsbuild).
+
 Before compilation, it is important to place the necessary library files in their directories. Check the folders in `vendor` for more information. 

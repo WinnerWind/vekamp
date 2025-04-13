@@ -39,7 +39,6 @@ int _kbhit()
 // libs and lib helpers
 #include "basshelpers.hpp"
 
-
 int main(int argc, char *argv[])
 {
     printf("Using BASS Version %s\n", BASSHelpers::GetVersionStr().c_str());

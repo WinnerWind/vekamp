@@ -13,7 +13,7 @@ The main motivation for this project is to replace my currently used music playe
 ## Current Plans
 This section covers the current plans for the project's development. At the moment, the main goal for development is to simply get the audio library working and playing music, and then get that functionality working across multiple platforms.
 
-The current development branch is [basstest-linux](https://github.com/vektor451/vekamp/tree/basstest-linux).
+The current development branch is [gtktest-win64](https://github.com/vektor451/vekamp/tree/gtktest-win64).
 
 ## Platforms
 Currently in Development:

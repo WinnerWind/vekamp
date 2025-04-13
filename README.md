@@ -13,7 +13,7 @@ The main motivation for this project is to replace my currently used music playe
 ## Current Plans
 Currently, the goal for the project's development, and this branch, is to get the audio library to play music files. The progress for this goal is as follows:
 - [x] Link GTK to the project.
-- [ ] Display a basic hello world screen.
+- [x] Display a basic hello world screen.
 - [ ] Allow playing a music file through a GUI prompt (filename, and play/stop).
 
 ## Platforms

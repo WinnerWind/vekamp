@@ -38,6 +38,7 @@ int _kbhit()
 
 // libs and lib helpers
 #include "basshelpers.hpp"
+#include <gtk/gtk.h>
 
 int main(int argc, char *argv[])
 {

@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.13.0)
 project(vekamp)
 
 # NOTE(ske): Set this to your directory
-set(GTK_WIN_PATH C:/gtk)
+set(GTK_WIN_PATH C:/gtk-build/gtk/x64/release)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/)
 
 # BASS -------------------------------------------------------------------------
 set(BASS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/bass24)
@@ -64,8 +65,16 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/main.cpp
 )
 
-add_custom_command(
-    TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DLL_PATH} ${CMAKE_CURRENT_BINARY_DIR}
-    VERBATIM
-)
+if(WIN32)
+    add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DIR}/libs/win64/bass.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/debug
+        VERBATIM
+    )
+elseif(UNIX)
+    add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DIR}/libs/linux-x86_64/libbass.so ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        VERBATIM
+    )
+endif()

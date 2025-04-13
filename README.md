@@ -12,7 +12,9 @@ The main motivation for this project is to replace my currently used music playe
 
 ## Current Plans
 Currently, the goal for the project's development, and this branch, is to get the audio library to play music files. The progress for this goal is as follows:
-- [ ] Make it all work on Linux.
+- [x] Make it all work on Linux.
+
+That was surprisingly easy.
 
 ## Platforms
 This branch intends to make the project cross-platform compatible across Windows and Linux.

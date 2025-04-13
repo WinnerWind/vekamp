@@ -16,4 +16,10 @@ if(WIN32)
         COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DIR}/libs/win64/bass.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/debug
         VERBATIM
     )
+elseif(UNIX)
+    add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DIR}/libs/linux-x86_64/libbass.so ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        VERBATIM
+    )
 endif()

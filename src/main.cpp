@@ -74,68 +74,161 @@ static void GTKOpenFile(GtkButton *picker, GtkLabel  *label)
 static void activate (GtkApplication *app, gpointer user_data, DWORD bassChannel)
 {
 	GtkWidget *window;
-	GtkIconTheme *icon_theme = gtk_icon_theme_get_for_display(gdk_display_get_default());
-
 	window = gtk_application_window_new (app);
-	gtk_window_set_title (GTK_WINDOW (window), "The music player");
-	gtk_window_set_default_size (GTK_WINDOW (window), 200, 200);
-	gtk_icon_theme_add_search_path(icon_theme, "assets");
+
+	GtkIconTheme *icon_theme = gtk_icon_theme_get_for_display(gdk_display_get_default());
 	gtk_window_set_default_icon_name("icon");
 	gtk_window_set_icon_name(GTK_WINDOW(window), "icon");
+	gtk_icon_theme_add_search_path(icon_theme, "assets");
 
-	GtkWidget *table;
-
-	table = gtk_grid_new ();
-    gtk_widget_set_margin_start (table, 20);
-    gtk_widget_set_margin_end (table, 20);
-    gtk_widget_set_margin_top (table, 20);
-    gtk_widget_set_margin_bottom (table, 20);
-    gtk_grid_set_row_spacing (GTK_GRID(table), 6);
-    gtk_grid_set_column_spacing (GTK_GRID(table), 6);
-	gtk_grid_set_column_homogeneous (GTK_GRID(table), true);
-	gtk_widget_set_hexpand(GTK_WIDGET(table), true);
-    gtk_window_set_child (GTK_WINDOW (window), table);
+	gtk_window_set_title (GTK_WINDOW (window), "VekAmp");
+	gtk_window_set_default_size (GTK_WINDOW (window), 800, 500);
 	
+	GtkCssProvider *cssStyle = gtk_css_provider_new();
+	gtk_css_provider_load_from_path(cssStyle, "assets/css/style.css");
+
+	gtk_style_context_add_provider_for_display(
+		gdk_display_get_default(),
+		GTK_STYLE_PROVIDER(cssStyle),
+		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+	);
+
+	GtkWidget *windowTable;
+	windowTable = gtk_grid_new();
+	
+	gtk_widget_set_margin_start (windowTable, 8);
+    gtk_widget_set_margin_end (windowTable, 8);
+    gtk_widget_set_margin_top (windowTable, 8);
+    gtk_widget_set_margin_bottom (windowTable, 8);
+	gtk_widget_set_valign(windowTable, GTK_ALIGN_END);
+	gtk_window_set_child(GTK_WINDOW(window), windowTable);
+
+	GtkWidget *controlFrame;
+	controlFrame = gtk_frame_new(NULL);
+	
+    gtk_widget_set_margin_top (controlFrame, 8);
+	gtk_widget_set_valign(controlFrame, GTK_ALIGN_END);
+	gtk_grid_attach(GTK_GRID(windowTable), controlFrame, 0, 1, 3, 1);
+
+	GtkWidget *controlTable;
+	controlTable = gtk_grid_new();
+    gtk_grid_set_row_spacing (GTK_GRID(controlTable), 6);
+    gtk_grid_set_column_spacing (GTK_GRID(controlTable), 6);
+	gtk_widget_set_margin_start (controlTable, 8);
+    gtk_widget_set_margin_end (controlTable, 8);
+    gtk_widget_set_margin_top (controlTable, 8);
+    gtk_widget_set_margin_bottom (controlTable, 8);
+	//gtk_grid_set_column_homogeneous (GTK_GRID(table), true);
+    gtk_frame_set_child (GTK_FRAME(controlFrame), controlTable);
+
+	GtkWidget *playbackTable;
+	playbackTable = gtk_grid_new();
+	
+	gtk_grid_set_column_homogeneous (GTK_GRID(playbackTable), true);
+	gtk_grid_set_baseline_row(GTK_GRID(playbackTable), 1);
+    gtk_grid_set_column_spacing (GTK_GRID(playbackTable), 4);
+	gtk_widget_set_valign(playbackTable, GTK_ALIGN_CENTER);
+    gtk_widget_set_margin_end (playbackTable, 8);
+	gtk_grid_attach(GTK_GRID(controlTable), playbackTable, 0, 0, 1, 1);
+	
+	GtkWidget *prevButton;
+	prevButton = gtk_button_new_from_icon_name("media-skip-backward");
+
+	g_signal_connect (prevButton, "clicked", G_CALLBACK (StopMusic), NULL);
+	gtk_grid_attach (GTK_GRID (playbackTable), prevButton, 0, 0, 1, 1);
+
 	GtkWidget *playButton;
-	playButton = gtk_button_new_with_label("Play/Pause");
+	playButton = gtk_button_new_from_icon_name("media-playback-start");
+
 	g_signal_connect (playButton, "clicked", G_CALLBACK (PlayMusic), NULL);
-	gtk_grid_attach (GTK_GRID (table), playButton, 0, 0, 2, 1);
+	gtk_grid_attach (GTK_GRID (playbackTable), playButton, 1, 0, 1, 1);
+
+	GtkWidget *nextButton;
+	nextButton = gtk_button_new_from_icon_name("media-skip-forward");
+
+	g_signal_connect (nextButton, "clicked", G_CALLBACK (PlayMusic), NULL);
+	gtk_grid_attach (GTK_GRID (playbackTable), nextButton, 2, 0, 1, 1);
+
+
+	GtkWidget *progressTable;
+	progressTable = gtk_grid_new();
 	
-	GtkWidget *stopButton;
-	stopButton = gtk_button_new_with_label("Stop");
-	g_signal_connect (stopButton, "clicked", G_CALLBACK (StopMusic), NULL);
-	gtk_grid_attach (GTK_GRID (table), stopButton, 2, 0, 2, 1);
+	gtk_widget_set_hexpand(GTK_WIDGET(progressTable), true);
+	gtk_grid_set_column_homogeneous (GTK_GRID(progressTable), true);
+	gtk_grid_set_baseline_row(GTK_GRID(progressTable), 1);
+	gtk_grid_attach(GTK_GRID(controlTable), progressTable, 1, 0, 4, 1);
+
+	GtkWidget *progressScale;
+	progressScale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.0, 1.0, 0.01);
 	
+	gtk_scale_set_draw_value (GTK_SCALE (progressScale), FALSE);
+	gtk_range_set_value (GTK_RANGE (progressScale), 1.0);
+	gtk_grid_attach (GTK_GRID (progressTable), progressScale, 0, 1, 4, 1);
+
+	GtkWidget *trackLabel;
+	trackLabel = gtk_label_new("Artist - Track");
+	
+	gtk_label_set_xalign(GTK_LABEL(trackLabel), 0.0);
+	gtk_grid_attach (GTK_GRID (progressTable), trackLabel, 0, 0, 3, 1);
+
+	GtkWidget *progLabel;
+	progLabel = gtk_label_new("00:00/99:99");
+	
+	gtk_label_set_xalign(GTK_LABEL(progLabel), 1.0);
+	gtk_grid_attach (GTK_GRID (progressTable), progLabel, 3, 0, 1, 1);
+	
+	GtkWidget *volTable;
+	volTable = gtk_grid_new();
+	
+	gtk_widget_set_hexpand_set(GTK_WIDGET(volTable), true);
+	gtk_grid_set_baseline_row(GTK_GRID(volTable), 1);
+	gtk_widget_set_valign(volTable, GTK_ALIGN_CENTER);
+    gtk_widget_set_margin_start(volTable, 8);
+	gtk_grid_attach(GTK_GRID(controlTable), volTable, 5, 0, 1, 1);
+
+	GtkWidget *volumeIcon;
+	volumeIcon = gtk_image_new_from_icon_name("audio-volume-high");
+
+	gtk_grid_attach (GTK_GRID (volTable), volumeIcon, 0, 0, 1, 1);
+
 	GtkWidget *volume;
 	volume = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.0, 1.0, 0.01);
+	
+	gtk_widget_set_hexpand(GTK_WIDGET(volume), true);
 	gtk_scale_set_draw_value (GTK_SCALE (volume), FALSE);
 	gtk_range_set_value (GTK_RANGE (volume), 1.0);
 	g_signal_connect (volume, "value-changed", G_CALLBACK (ChangeVolume), NULL);
-	gtk_grid_attach (GTK_GRID (table), volume, 1, 1, 3, 1);
+	gtk_grid_attach (GTK_GRID (volTable), volume, 1, 0, 1, 1);
 	
-	GtkWidget *labelvol;
-	labelvol = gtk_label_new("Volume: ");
-	gtk_label_set_xalign(GTK_LABEL(labelvol), 0.0);
-	gtk_grid_attach (GTK_GRID (table), labelvol, 0, 1, 2, 1);
+	const char* classes[]{"controlPanelVolume", nullptr};
+	gtk_widget_set_css_classes(volume, classes);
+
+	GtkWidget *fileTable;
+	fileTable = gtk_grid_new();
+	gtk_widget_set_hexpand(GTK_WIDGET(fileTable), true);
+	gtk_grid_attach(GTK_GRID(windowTable), fileTable, 0, 0, 3, 1);
 
 	GtkWidget *labelFile;
 	labelFile = gtk_label_new("File: ");
 	gtk_label_set_xalign(GTK_LABEL(labelFile), 0.0);
-	gtk_grid_attach (GTK_GRID (table), labelFile, 0, 2, 1, 1);
+	gtk_grid_attach (GTK_GRID (fileTable), labelFile, 0, 0, 1, 1);
 
 	GtkWidget *labelFilename;
 	labelFilename = gtk_label_new(FileName.c_str());
-	gtk_label_set_xalign(GTK_LABEL(labelFilename), 0.0);
+	gtk_widget_set_hexpand(GTK_WIDGET(labelFilename), true);
+	gtk_label_set_xalign(GTK_LABEL(labelFilename), 0.5);
 	gtk_label_set_ellipsize(GTK_LABEL(labelFilename), PANGO_ELLIPSIZE_MIDDLE);
-	gtk_grid_attach (GTK_GRID (table), labelFilename, 1, 2, 2, 1);
+	gtk_grid_attach (GTK_GRID (fileTable), labelFilename, 1, 0, 2, 1);
 
 	GtkWidget *buttonFile;
     buttonFile = gtk_button_new_from_icon_name ("document-open-symbolic");
+	gtk_widget_set_halign(buttonFile, GTK_ALIGN_END);
     gtk_accessible_update_property (GTK_ACCESSIBLE (buttonFile),
                                     GTK_ACCESSIBLE_PROPERTY_LABEL, "Select File",
                                     -1);
     g_signal_connect (buttonFile, "clicked", G_CALLBACK (GTKOpenFile), labelFilename);
-	gtk_grid_attach (GTK_GRID (table), buttonFile, 3, 2, 1, 1);
+	gtk_grid_attach (GTK_GRID (fileTable), buttonFile, 3, 0, 1, 1);
+	
 
 	gtk_window_present (GTK_WINDOW (window));
 }

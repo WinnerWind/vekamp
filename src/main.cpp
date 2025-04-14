@@ -125,7 +125,7 @@ static void GTKOpenFile(GtkButton *picker, GtkLabel  *label)
 
 	dialog = gtk_file_dialog_new ();
 
-	cancellable = g_cancellable_new ();
+	cancellable = g_cancellable_new();
 
 	gtk_file_dialog_open (dialog, parent, cancellable, FileOpened, label);
 
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
     if(!BASS_Init(deviceIdx, 48000, 0, 0, NULL))
         BASSHelpers::BASSError("Couldn't init device.");
 
-    BASSChannel = BASS_StreamCreateFile(FALSE, argv[1], 0, 0, BASS_SAMPLE_FLOAT);
+    BASSChannel = BASS_StreamCreateFile(FALSE, FileName.c_str(), 0, 0, BASS_SAMPLE_FLOAT);
 
     //gtk code
     GtkApplication *app;

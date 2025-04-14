@@ -73,7 +73,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 
 add_custom_command(
     TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DIR}/libs/win64/bass.dll ${EXE_PATH}
+    COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DLL_PATH} ${EXE_PATH}
     VERBATIM
 )
 

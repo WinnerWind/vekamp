@@ -1,4 +1,4 @@
-# VekAmp - gtktest-linux
+# VekAmp - dev
 <p align="center">
   <img alt="vekamp logo" width="45%" src="assets/branding/wordmark.svg" />
 </p>
@@ -11,13 +11,14 @@ The main motivation for this project is to replace my currently used music playe
 >This project is still in it's infancy, If there are any suggestions or feedback you would like to provide, please [submit an issue](https://github.com/vektor451/vekamp/issues/new).
 
 ## Current Plans
-Currently, the goal for the project's development, and this branch, is to get the audio library to play music files. The progress for this goal is as follows:
-- [x] Get it working on linux.
-
-It just works. It's a bit finnicky compared to linux tho, and a bit more unstable. I am running it via KDE, so it might change some things.
+The plans for the current stage of development are as follows: 
+- [ ] Basic media playback functionalities (Previous, Play/Pause, Next, Scrollbar, Duration/Position, Volume, Loop)
+- [ ] Track Queue
+- [ ] Read metadata
+- [ ] Read playlists.
 
 ## Platforms
-This branch is focused on Windows for the time being. 
+This branch should compile for both Windows and Linux.
 
 ## Compiling
 To compile on windows, you need to use CMake with MSVC. You want to make sure GTK is first built by building it through [gvsbuild](https://github.com/wingtk/gvsbuild). The output directory for GTK should be C:\gtk-build, and the CMakeLists.txt assumes your GTK directories are the same as if they were build via gvsbuild. 

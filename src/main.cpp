@@ -4,96 +4,34 @@
 #include <string>
 #include <sstream>
 
-// platform specific
-#ifdef _WIN32
-#include <conio.h>
-#else // OSX/Linux // Just copied this code from the BASS contest example code. Yeah this is just C code.
-#include <sys/time.h>
-#include <termios.h>
-#include <string.h>
-#include <unistd.h>
-
-#define Sleep(x) usleep(x*1000)
-
-int _kbhit()
-{
-	int r;
-	fd_set rfds;
-	struct timeval tv = { 0 };
-	struct termios term, oterm;
-	tcgetattr(0, &oterm);
-	memcpy(&term, &oterm, sizeof(term));
-	cfmakeraw(&term);
-	tcsetattr(0, TCSANOW, &term);
-	FD_ZERO(&rfds);
-	FD_SET(0, &rfds);
-	r = select(1, &rfds, NULL, NULL, &tv);
-	tcsetattr(0, TCSANOW, &oterm);
-	return r;
-}
-#endif
-
 // vekamp
 #include "utils.hpp"
 
 // libs and lib helpers
-#include "basshelpers.hpp"
+#include "bassplayer.hpp"
 #include <gtk/gtk.h>
 
-DWORD BASSChannel;
-BOOL RestartChannel = FALSE;
 std::string FileName;
-float Volume = 1.0;
 
 static void PlayMusic (GtkWidget *widget, gpointer data, DWORD bassChannel)
 {
-    if (BASS_ChannelIsActive(BASSChannel) == BASS_ACTIVE_STOPPED
-		|| BASS_ChannelIsActive(BASSChannel) == BASS_ACTIVE_PAUSED)
-	{
-		if(BASS_ChannelPlay(BASSChannel, RestartChannel))
-        {
-			printf("Playing Audio...\n");
-			RestartChannel = FALSE;
-		}
-    	else
-        	BASSHelpers::BASSError("Couldn't play file.", FALSE);
-	}
-	else if(BASS_ChannelIsActive(BASSChannel) == BASS_ACTIVE_PLAYING)
-	{
-		if(BASS_ChannelPause(BASSChannel))
-        {
-			printf("Pausing Playback.\n");
-		}
-    	else
-        	BASSHelpers::BASSError("Couldn't pause.", FALSE);
-	}
+	BASS::BASSPlayer::StartPausePlayback();
 }
 
 static void StopMusic (GtkWidget *widget, gpointer data, DWORD bassChannel)
 {
-	if(BASS_ChannelStop(BASSChannel))
-	{
-		printf("Stopping Playback.\n");
-		RestartChannel = TRUE;
-	}
-	else
-		BASSHelpers::BASSError("Couldn't stop.", FALSE);
+	BASS::BASSPlayer::StopPlayback();
 }
 
 static void SetMusicFile(char *name)
 {
-	FileName = name;
-	BASS_ChannelStop(BASSChannel);
-	BASSChannel = BASS_StreamCreateFile(FALSE, name, 0, 0, BASS_SAMPLE_FLOAT);
-	BASS_SetVolume(Volume);
+	BASS::BASSPlayer::StartFilePlayback(name);
 }
 
 static void ChangeVolume (GtkRange *range)
 {
 	double value = gtk_range_get_value(range);
-	printf("Volume: %f\n", value);
-	BASS_SetVolume((float)value);
-	Volume = (float)value;
+	BASS::BASSPlayer::SetVolume((float)value);
 }
 
 static void SetFile (GFile *file, gpointer data)
@@ -204,16 +142,7 @@ static void activate (GtkApplication *app, gpointer user_data, DWORD bassChannel
 
 int main(int argc, char *argv[])
 {
-    //basstest code
-    printf("Using BASS Version %s\n", BASSHelpers::GetVersionStr().c_str());
-
-    // Check the correct BASS version was loaded.
-	if (HIWORD(BASS_GetVersion()) != BASSVERSION) {
-		printf("An incorrect version of BASS was loaded\n");
-		return 0;
-	}
-
-	int deviceIdx = -1;
+    BASS::BASSPlayer::Init();
 
     printf("Path: %s\n", argv[1]);
 
@@ -226,11 +155,7 @@ int main(int argc, char *argv[])
 		FileName = argv[1];
 	}
 
-    // Attempts initialisation on default device. 
-    if(!BASS_Init(deviceIdx, 48000, 0, 0, NULL))
-        BASSHelpers::BASSError("Couldn't init device.");
-
-    BASSChannel = BASS_StreamCreateFile(FALSE, FileName.c_str(), 0, 0, BASS_SAMPLE_FLOAT);
+	BASS::BASSPlayer::StartFilePlayback(FileName.c_str());
 
     //gtk code
     GtkApplication *app;
@@ -245,6 +170,6 @@ int main(int argc, char *argv[])
 	file = g_file_new_for_path(argv[1]);
     
 	g_object_unref (app);
-    BASS_Free();
+    BASS::BASSPlayer::Destroy();
     return 0;
 }

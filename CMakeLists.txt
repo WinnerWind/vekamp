@@ -67,7 +67,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${GTK4_INCLUDE_DIRS})
 
 target_sources(${PROJECT_NAME} PRIVATE
     src/utils.cpp
-    src/basshelpers.cpp
+    src/bassplayer.cpp
     src/main.cpp
 )
 

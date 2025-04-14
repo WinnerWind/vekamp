@@ -14,14 +14,14 @@ The main motivation for this project is to replace my currently used music playe
 Currently, the goal for the project's development, and this branch, is to get the audio library to play music files. The progress for this goal is as follows:
 - [x] Link GTK to the project.
 - [x] Display a basic hello world screen.
-- [ ] Allow playing a music file through a GUI prompt (filename, and play/stop).
+- [x] Allow playing a music file through a GUI prompt (filename, and play/stop).
+
+Resources on working with GTK are a bit iffy but we're making good progress!
 
 ## Platforms
 This branch is focused on Windows for the time being. 
 
 ## Compiling
-As of right now, we're still compiling the main program via MSVC, however GTK might require more stuff to get working.  
-
-In order to link GTK, first build it via [gvsbuild](https://github.com/wingtk/gvsbuild).
+To compile on windows, you need to use CMake with MSVC. You want to make sure GTK is first built by building it through [gvsbuild](https://github.com/wingtk/gvsbuild). The output directory for GTK should be C:\gtk-build, and the CMakeLists.txt assumes your GTK directories are the same as if they were build via gvsbuild. 
 
 Before compilation, it is important to place the necessary library files in their directories. Check the folders in `vendor` for more information. 

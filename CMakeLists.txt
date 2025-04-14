@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.13.0)
 project(vekamp)
 
-# NOTE(ske): Set this to your directory
-set(GTK_WIN_PATH C:/gtk-build/gtk/x64/release)
+#set output dirs
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/)
+
+if(WIN32)
+    set(EXE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}debug)
+elseif(UNIX)
+    set(EXE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+endif()
 
 # BASS -------------------------------------------------------------------------
 set(BASS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/bass24)
@@ -32,6 +37,7 @@ elseif (UNIX)
 endif()
 
 # GTK4 -------------------------------------------------------------------------
+set(GTK_WIN_PATH C:/gtk-build/gtk/x64/release)
 
 if (WIN32)
     set(CMAKE_PREFIX_PATH ${GTK_WIN_PATH})
@@ -65,16 +71,14 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/main.cpp
 )
 
-if(WIN32)
-    add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DIR}/libs/win64/bass.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/debug
-        VERBATIM
-    )
-elseif(UNIX)
-    add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DIR}/libs/linux-x86_64/libbass.so ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-        VERBATIM
-    )
-endif()
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy ${BASS_DIR}/libs/win64/bass.dll ${EXE_PATH}
+    VERBATIM
+)
+
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets ${EXE_PATH}/assets
+    VERBATIM
+)

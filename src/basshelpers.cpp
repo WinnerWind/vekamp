@@ -42,10 +42,14 @@ namespace BASSHelpers
         return verString;
     }
 
-    void BASSError(const char *text)
+    void BASSError(const char *text, bool isFatal)
     {
         printf("BASS Error(%d): %s\n", BASS_ErrorGetCode(), text);
-        BASS_Free();
-        exit(0);
+        
+        if(isFatal)
+        {
+            BASS_Free();
+            exit(0);
+        }
     }
 }

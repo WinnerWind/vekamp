@@ -12,10 +12,11 @@ The main motivation for this project is to replace my currently used music playe
 
 ## Current Plans
 The plans for the current stage of development are as follows: 
-- [ ] Basic media playback functionalities (Previous, Play/Pause, Next, Scrollbar, Duration/Position, Volume, Loop)
+- [x] Basic media playback functionalities (Previous, Play/Pause, Next, Scrollbar, Duration/Position, Volume, Loop) (I can't really implement previous, next, and loop without first doing a track queue.)
+- [ ] Implement different format extensions for BASS.
 - [ ] Track Queue
-- [ ] Read metadata
 - [ ] Read playlists.
+- [ ] Read metadata
 
 ## Platforms
 This branch should compile for both Windows and Linux.

@@ -11,35 +11,106 @@
 #include "bassplayer.hpp"
 #include <gtk/gtk.h>
 
+// globals, move this to it's own class eventually. 
 std::string FileName;
+GtkWidget *progLabel;
+GtkWidget *progressScale;
+bool holdingScroll = false;
+bool keepUpdating = true;
 
-static void PlayMusic (GtkWidget *widget, gpointer data, DWORD bassChannel)
+static gboolean UpdateProgress(gpointer data)
 {
-	BASS::BASSPlayer::StartPausePlayback();
+	double progSecs = BASS::BASSPlayer::GetTrackProgressSecs();
+	std::string progString = BASS::BASSPlayer::GetTrackProgressStr(progSecs);
+	
+	gtk_label_set_text(GTK_LABEL(progLabel), progString.c_str());
+	gtk_range_set_value(GTK_RANGE(progressScale), progSecs);
+
+	return keepUpdating;
 }
 
-static void StopMusic (GtkWidget *widget, gpointer data, DWORD bassChannel)
+static void StartProgressTimeout()
+{
+	g_timeout_add(25, UpdateProgress, NULL);
+}
+
+static void PlayMusic (GtkWidget *widget, gpointer data)
+{
+	BASS::BASSPlayer::StartPausePlayback();
+	keepUpdating = BASS::BASSPlayer::IsPlaying();
+	
+	if(keepUpdating)
+		StartProgressTimeout();
+}
+
+static void StopMusic (GtkWidget *widget, gpointer data)
 {
 	BASS::BASSPlayer::StopPlayback();
+	keepUpdating = false;
+}
+
+static void ProgScrollBegin (GtkWidget *widget, gpointer data)
+{
+	printf("Holding scroll.\n");
+	BASS::BASSPlayer::StartScroll();
+	keepUpdating = false;
+	holdingScroll = true;
+}
+
+static void ProgScrollEnd (GtkWidget *widget, gpointer data)
+{
+	printf("No longer holding scroll.\n");
+	
+	double scrollPos = gtk_range_get_value(GTK_RANGE(progressScale));
+	BASS::BASSPlayer::SetPos(scrollPos);
+
+	BASS::BASSPlayer::EndScroll();
+	
+	keepUpdating = BASS::BASSPlayer::IsPlaying();
+	holdingScroll = false;
+	
+	if(keepUpdating)
+		StartProgressTimeout();
+}
+
+static void ProgScrollChange(GtkRange *range)
+{
+	if(holdingScroll)
+	{
+		double value = gtk_range_get_value(range);
+		//BASS::BASSPlayer::SetPos(value);
+		std::string progString = BASS::BASSPlayer::GetTrackProgressStr(value);
+		gtk_label_set_text(GTK_LABEL(progLabel), progString.c_str());
+	}
 }
 
 static void SetMusicFile(char *name)
 {
 	BASS::BASSPlayer::StartFilePlayback(name);
+	
+	gtk_range_set_range(GTK_RANGE(progressScale), 0.0, BASS::BASSPlayer::GetTrackLenSecs());
+	gtk_range_set_value(GTK_RANGE(progressScale), 0.0);
+	
+	const char *lenStr = BASS::BASSPlayer::GetTrackLenStr();
+	char finalLenStr[20];
+
+	std::snprintf(finalLenStr, sizeof(finalLenStr), "0:00 / %s", lenStr);
+	
+	gtk_label_set_text(GTK_LABEL(progLabel), finalLenStr);
+
+	keepUpdating = false;
 }
 
-static void ChangeVolume (GtkRange *range)
+static void ChangeVolume(GtkRange *range)
 {
 	double value = gtk_range_get_value(range);
 	BASS::BASSPlayer::SetVolume((float)value);
 }
 
-static void SetFile (GFile *file, gpointer data)
+static void SetFile(GFile *file, gpointer data)
 {
 	char *name;	
 	name = g_file_get_path (file);
-
-	printf("Set path to: %s\n", name);
 
 	gtk_label_set_label (GTK_LABEL (data), name);
 	SetMusicFile(name);
@@ -55,6 +126,15 @@ static void FileOpened (GObject *source, GAsyncResult *result, void *data)
 	SetFile (file, data);
 }
 
+static gboolean abort_mission (gpointer data)
+{
+	//idk how to make this work? guess cancellable is never gonna get freed lol.
+	//GCancellable *cancellable = data;
+  	//g_cancellable_cancel (cancellable);
+	
+	return true;
+}
+
 static void GTKOpenFile(GtkButton *picker, GtkLabel  *label)
 {
 	GtkWindow *parent = GTK_WINDOW (gtk_widget_get_root (GTK_WIDGET (picker)));
@@ -62,6 +142,12 @@ static void GTKOpenFile(GtkButton *picker, GtkLabel  *label)
 	GCancellable *cancellable;
 
 	dialog = gtk_file_dialog_new ();
+
+	cancellable = g_cancellable_new();
+	
+	g_timeout_add_seconds_full (G_PRIORITY_DEFAULT,
+		20,
+		abort_mission, g_object_ref (cancellable), g_object_unref);
 
 	cancellable = g_cancellable_new();
 
@@ -149,7 +235,6 @@ static void activate (GtkApplication *app, gpointer user_data, DWORD bassChannel
 	g_signal_connect (nextButton, "clicked", G_CALLBACK (PlayMusic), NULL);
 	gtk_grid_attach (GTK_GRID (playbackTable), nextButton, 2, 0, 1, 1);
 
-
 	GtkWidget *progressTable;
 	progressTable = gtk_grid_new();
 	
@@ -158,12 +243,31 @@ static void activate (GtkApplication *app, gpointer user_data, DWORD bassChannel
 	gtk_grid_set_baseline_row(GTK_GRID(progressTable), 1);
 	gtk_grid_attach(GTK_GRID(controlTable), progressTable, 1, 0, 4, 1);
 
-	GtkWidget *progressScale;
+	// thank you zero upvote stackoverflow answer for this ingenious solution.
+	// i will memorise you here because i cannot make an account
+	// https://stackoverflow.com/a/79108304
+	GtkWidget *scaleBox;
+	scaleBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_grid_attach (GTK_GRID (progressTable), scaleBox, 0, 1, 4, 1);
+
 	progressScale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.0, 1.0, 0.01);
 	
 	gtk_scale_set_draw_value (GTK_SCALE (progressScale), FALSE);
+	gtk_widget_set_hexpand(GTK_WIDGET(progressScale), true);
 	gtk_range_set_value (GTK_RANGE (progressScale), 1.0);
-	gtk_grid_attach (GTK_GRID (progressTable), progressScale, 0, 1, 4, 1);
+	gtk_box_append(GTK_BOX(scaleBox), progressScale);
+
+	GtkGesture *progressScaleGesture;
+	progressScaleGesture = gtk_gesture_click_new();
+	
+	//gtk_gesture_long_press_set_delay_factor(GTK_GESTURE_LONG_PRESS(progressScaleGesture), 0.5);
+	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(progressScaleGesture), 0);
+	gtk_widget_add_controller(scaleBox, GTK_EVENT_CONTROLLER(progressScaleGesture));
+	gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(progressScaleGesture), GTK_PHASE_CAPTURE);
+
+	g_signal_connect(progressScaleGesture, "pressed", G_CALLBACK (ProgScrollBegin), NULL);
+	g_signal_connect(progressScaleGesture, "released", G_CALLBACK (ProgScrollEnd), NULL);
+	g_signal_connect(progressScale, "value-changed", G_CALLBACK(ProgScrollChange), NULL);
 
 	GtkWidget *trackLabel;
 	trackLabel = gtk_label_new("Artist - Track");
@@ -171,7 +275,6 @@ static void activate (GtkApplication *app, gpointer user_data, DWORD bassChannel
 	gtk_label_set_xalign(GTK_LABEL(trackLabel), 0.0);
 	gtk_grid_attach (GTK_GRID (progressTable), trackLabel, 0, 0, 3, 1);
 
-	GtkWidget *progLabel;
 	progLabel = gtk_label_new("00:00/99:99");
 	
 	gtk_label_set_xalign(GTK_LABEL(progLabel), 1.0);
@@ -197,7 +300,7 @@ static void activate (GtkApplication *app, gpointer user_data, DWORD bassChannel
 	gtk_widget_set_hexpand(GTK_WIDGET(volume), true);
 	gtk_scale_set_draw_value (GTK_SCALE (volume), FALSE);
 	gtk_range_set_value (GTK_RANGE (volume), 1.0);
-	g_signal_connect (volume, "value-changed", G_CALLBACK (ChangeVolume), NULL);
+	g_signal_connect (volume, "value-changed", G_CALLBACK(ChangeVolume), NULL);
 	gtk_grid_attach (GTK_GRID (volTable), volume, 1, 0, 1, 1);
 	
 	const char* classes[]{"controlPanelVolume", nullptr};
@@ -228,8 +331,23 @@ static void activate (GtkApplication *app, gpointer user_data, DWORD bassChannel
                                     -1);
     g_signal_connect (buttonFile, "clicked", G_CALLBACK (GTKOpenFile), labelFilename);
 	gtk_grid_attach (GTK_GRID (fileTable), buttonFile, 3, 0, 1, 1);
-	
 
+	StartProgressTimeout();
+
+	if(FileName != "No file.")
+	{
+		//printf("Track Len: %f\n", BASS::BASSPlayer::GetTrackLenSecs());
+		gtk_range_set_range(GTK_RANGE(progressScale), 0.0, BASS::BASSPlayer::GetTrackLenSecs());
+		gtk_range_set_value(GTK_RANGE(progressScale), 0.0);
+		
+		const char *lenStr = BASS::BASSPlayer::GetTrackLenStr();
+		char finalLenStr[20];
+	
+		std::snprintf(finalLenStr, sizeof(finalLenStr), "0:00 / %s", lenStr);
+		
+		gtk_label_set_text(GTK_LABEL(progLabel), finalLenStr);
+	}
+	
 	gtk_window_present (GTK_WINDOW (window));
 }
 

@@ -20,18 +20,21 @@ bool keepUpdating = true;
 
 static gboolean UpdateProgress(gpointer data)
 {
-	double progSecs = BASS::BASSPlayer::GetTrackProgressSecs();
-	std::string progString = BASS::BASSPlayer::GetTrackProgressStr(progSecs);
-	
-	gtk_label_set_text(GTK_LABEL(progLabel), progString.c_str());
-	gtk_range_set_value(GTK_RANGE(progressScale), progSecs);
+	if(keepUpdating)
+	{
+		double progSecs = BASS::BASSPlayer::GetTrackProgressSecs();
+		std::string progString = BASS::BASSPlayer::GetTrackProgressStr(progSecs);
+		
+		gtk_label_set_text(GTK_LABEL(progLabel), progString.c_str());
+		gtk_range_set_value(GTK_RANGE(progressScale), progSecs);
+	}
 
 	return keepUpdating;
 }
 
 static void StartProgressTimeout()
 {
-	g_timeout_add(25, UpdateProgress, NULL);
+	g_timeout_add(100, UpdateProgress, NULL);
 }
 
 static void PlayMusic (GtkWidget *widget, gpointer data)

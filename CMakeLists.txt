@@ -15,17 +15,17 @@ endif()
 
 # BASS ------------------------------------------------------------------------
 set(BASS_DIR       ${VENDOR_DIR}/bass24)
-set(BASSALAC_DIR   ${VENDOR_DIR}/bassalac)
-set(BASSAPE_DIR    ${VENDOR_DIR}/bassape)
-set(BASSFLAC_DIR   ${VENDOR_DIR}/bassflac)
-set(BASSOPUS_DIR   ${VENDOR_DIR}/bassopus)
+set(BASSALAC_DIR   ${VENDOR_DIR}/bassalac24)
+set(BASSAPE_DIR    ${VENDOR_DIR}/bassape24)
+set(BASSFLAC_DIR   ${VENDOR_DIR}/bassflac24)
+set(BASSOPUS_DIR   ${VENDOR_DIR}/bassopus24)
 
 set(BASS_INCLUDE_DIRS 
-    ${VENDOR_DIR}/bass24;
-    ${VENDOR_DIR}/bassalac;
-    ${VENDOR_DIR}/bassape;
-    ${VENDOR_DIR}/bassflac;
-    ${VENDOR_DIR}/bassopus;
+    ${BASS_DIR};
+    ${BASSALAC_DIR};
+    ${BASSAPE_DIR};
+    ${BASSFLAC_DIR};
+    ${BASSOPUS_DIR};
 )
 
 message("== Init BASS ==")

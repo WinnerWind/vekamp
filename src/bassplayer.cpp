@@ -4,6 +4,9 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <string>
+#include <string_view>
+#include <cassert>
 
 // vekamp
 #include "utils.hpp"
@@ -53,6 +56,41 @@ namespace BASS
         }
     }
 
+    // AudioFormat Class.
+    std::map<AudioFormat::StreamFormat, std::vector<std::string>> AudioFormat::ExtNames{
+        {StreamFormat::WAV, 	{"WAV", "WAVE"}},
+        {StreamFormat::FLAC, 	{"FLAC", }},
+        {StreamFormat::ALAC, 	{"CAF"}},
+        {StreamFormat::AIFF, 	{"AIFF", "AIF", "AIFC"}},
+        {StreamFormat::AAC, 	{"AIFF", "AIF", "AIFC"}},
+        {StreamFormat::APE, 	{"APE"}},
+        {StreamFormat::AAC, 	{"AAC", "3GP", "ADIF", "ADTS"}},
+        {StreamFormat::M4A, 	{"M4A", "M4R", "MP4", "M4P", "M4B", "M4V"}}, // BASS can play the audio from MP4s so why not.
+        {StreamFormat::MP3, 	{"MP3", "MPGA"}},
+        {StreamFormat::MP2, 	{"MP2", "MP2A", "M2A", "MPA"}},
+        {StreamFormat::MP1, 	{"MP1"}},
+        {StreamFormat::OGG, 	{"OGG"}},
+        {StreamFormat::OPUS, 	{"OPUS"}},
+    };
+    
+    AudioFormat::StreamFormat AudioFormat::GetFormat(std::string fPath)
+    {
+        std::transform(fPath.begin(), fPath.end(), fPath.begin(), std::toupper);
+        for(int i = 0; i < StreamFormat::Count; i++)
+        {
+            size_t size = ExtNames[(StreamFormat)i].size();
+            for(int f = 0; f < size; f++)
+            {
+                if(StrEndsWith(fPath, ExtNames[(StreamFormat)i][f]))
+                {
+                    return (StreamFormat)i;
+                }
+            }
+        }
+
+        return StreamFormat::NullFormat;
+    }
+
     // BASSPlayer Class.
     float   	BASSPlayer::volume 			= 1.0;
     int     	BASSPlayer::deviceIdx 		= -1; // -1 = Default Device.
@@ -93,8 +131,47 @@ namespace BASS
         
         if(!BASS_ChannelFree(curChannel))
             BASSError("Couldn't free channel. (No channel set?)", false);
+        
+        AudioFormat::StreamFormat format = AudioFormat::GetFormat(fPath);
+        
+        // These formats should be definite.
+        if(format == AudioFormat::FLAC)
+            curChannel = BASS_FLAC_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+        else if(format == AudioFormat::ALAC)
+            curChannel = BASS_ALAC_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+        else if(format == AudioFormat::APE)
+            curChannel = BASS_APE_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+        else if(format == AudioFormat::OPUS)
+            curChannel = BASS_OPUS_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+        // HACK: These are containers and might have multiple formats. We are going to brute force them.
+        else if(format == AudioFormat::OGG) 
+        {
+            // Try as vorbis
+            curChannel = BASS_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+            
+            // If func returns false, then file is not valid vorbis. Try as OPUS.
+            if(!BASS_ChannelSetAttribute(curChannel, BASS_ATTRIB_VOL, volume))
+                curChannel = BASS_OPUS_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+        }
+        else if(format == AudioFormat::M4A)
+        {
+            // Try as generic.
+            curChannel = BASS_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
 
-        curChannel = BASS_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+            // If funcs return false, format is invalid. ALAC, FLAC, and OPUS are tried. 
+            if(!BASS_ChannelSetAttribute(curChannel, BASS_ATTRIB_VOL, volume))
+                curChannel = BASS_ALAC_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+
+            if(!BASS_ChannelSetAttribute(curChannel, BASS_ATTRIB_VOL, volume))
+                curChannel = BASS_FLAC_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+            
+            if(!BASS_ChannelSetAttribute(curChannel, BASS_ATTRIB_VOL, volume))
+                curChannel = BASS_OPUS_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+        }
+        // Can be played by default in BASS, or just isn't a valid file.
+        else
+            curChannel = BASS_StreamCreateFile(FALSE, fPath, 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_PRESCAN);
+        
         BASS_ChannelSetAttribute(curChannel, BASS_ATTRIB_VOL, volume);
 
 	    printf("Playing back path: %s\n", fPath);
@@ -123,6 +200,7 @@ namespace BASS
 
     void BASSPlayer::StartPausePlayback()
     {
+        // RESUME
         if (BASS_ChannelIsActive(curChannel) == BASS_ACTIVE_STOPPED
 		|| BASS_ChannelIsActive(curChannel) == BASS_ACTIVE_PAUSED)
         {
@@ -136,6 +214,7 @@ namespace BASS
 
 			isPlaying = true;
         }
+        // PAUSE
         else if(BASS_ChannelIsActive(curChannel) == BASS_ACTIVE_PLAYING)
         {
             if(BASS_ChannelPause(curChannel))
@@ -227,7 +306,6 @@ namespace BASS
 		return returnVal;
 	}
 
-
     // Setters & Getters
     void BASSPlayer::SetVolume(float vol)
     {
@@ -238,10 +316,10 @@ namespace BASS
     }
 
 	// One liner Setters/Getters
-    float BASSPlayer::GetVolume() 				{return volume;}
-	QWORD BASSPlayer::GetTrackLen() 			{return trackLen;}
-	double BASSPlayer::GetTrackLenSecs()		{return BASS_ChannelBytes2Seconds(curChannel, trackLen);}
+    float       BASSPlayer::GetVolume() 		{return volume;}
+	QWORD       BASSPlayer::GetTrackLen() 		{return trackLen;}
+	double      BASSPlayer::GetTrackLenSecs()	{return BASS_ChannelBytes2Seconds(curChannel, trackLen);}
 	const char *BASSPlayer::GetTrackLenStr() 	{return trackLenStr.c_str();}
-	bool BASSPlayer::IsPlaying()				{return isPlaying;}
+	bool        BASSPlayer::IsPlaying()			{return isPlaying;}
 
 }

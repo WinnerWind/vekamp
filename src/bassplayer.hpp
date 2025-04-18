@@ -1,11 +1,43 @@
 #pragma once
 
+#include <map>
+#include <vector>
 #include <bass.h> 
+#include <bassalac.h> 
+#include <bassape.h> 
+#include <bassflac.h> 
+#include <bassopus.h> 
 
 namespace BASS 
 {
     std::string GetVersionStr();
     void BASSError(const char *text, bool isFatal = true);
+
+    class AudioFormat {
+        public:
+            enum StreamFormat{
+				NullFormat,
+                WAV,
+                FLAC,
+                ALAC,
+                AIFF,
+                APE,
+				AAC,
+				M4A,
+                MP3,
+                MP2,
+                MP1,
+                OGG,
+                OPUS,
+				Count // Amount of formats currently defined. 
+            };
+
+            static std::map<StreamFormat, std::vector<std::string>> ExtNames;
+        
+            static StreamFormat GetFormat(std::string fPath);
+    };
+
+    
 
     class BASSPlayer {
         public:

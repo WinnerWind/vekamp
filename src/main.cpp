@@ -370,6 +370,8 @@ int main(int argc, char *argv[])
 	}
 
 	BASS::BASSPlayer::StartFilePlayback(FileName.c_str());
+	//BASS::AudioFormat::StreamFormat format = BASS::AudioFormat::GetFormat(FileName);
+	//printf("Format: %d", (int)format);
 
     //gtk code
     GtkApplication *app;

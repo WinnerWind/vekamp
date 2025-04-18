@@ -1,4 +1,4 @@
 ## Place BASS library here.
-For the project to successfully compile, you will need the `libbass.so` file from the [BASS audio library](https://www.un4seen.com/bass.html). You can download it [here](https://www.un4seen.com/files/bass24-linux.zip).
+For the project to successfully compile, you will need the `libbassopus.so` file from the [BASS audio library](https://www.un4seen.com/bass.html). You can download it [here](https://www.un4seen.com/files/bassopus24-linux.zip).
 ### Files needed for compilation:
-- bass.so (from: `bass24-linux.zip/libs/x86_64/libbass.so`)
+- libbassopus.so (from: `bass24opus-linux.zip/libs/x86_64/libbassopus.so`)

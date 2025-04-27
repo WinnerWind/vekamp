@@ -9,8 +9,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout code from Dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
 
       - name: Set up MSVC Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1
@@ -48,8 +50,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout code from Dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
 
       - name: Install dependencies
         run: |

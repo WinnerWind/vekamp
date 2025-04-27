@@ -55,6 +55,9 @@ jobs:
         with:
           ref: dev
 
+      - name: Change directory to Vekamp
+        run: cd vekamp
+
       - name: Install dependencies
         run: |
           sudo apt-get update

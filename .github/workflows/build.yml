@@ -16,4 +16,4 @@ jobs:
       - name: Configure using CMake
         run: cmake -S vekamp -B vekamp/build -DCMAKE_CXX_STANDARD=17
       - name: Build makefile
-        run: cmake --build vekamp/build -DCMAKE_CXX_STANDARD=17
+        run: cmake --build vekamp/build
